@@ -8,7 +8,7 @@ hw_timer_t *timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // Place the Interrupt handeler in IRAM section of memory
-void  onTimer() {
+void  IRAM_ATTR onTimer() {
 	// Lock the mutex
 	//portENTER_CRITICAL_ISR(&timerMux);
 	// modify the global variable in the System process
