@@ -1,24 +1,27 @@
 #include "Arduino.h"
+#include "ESP32Servo.h"
+#include "analogWrite.h"
 
-double interruptCounter;
-
+double interruptCounter=0;
+double sinComp=0;
+double numSamples = 150;
+double frequencyTarget = 100;
+double increment = (2*PI)/numSamples;
 // Pointer to the timer object
 hw_timer_t *timer = NULL;
-// Mutex object used for protecting variables
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // Place the Interrupt handeler in IRAM section of memory
 void  IRAM_ATTR onTimer() {
-	// Lock the mutex
-	//portENTER_CRITICAL_ISR(&timerMux);
-	// modify the global variable in the System process
-	interruptCounter+=1.0;
-	// release the lock
-	//portEXIT_CRITICAL_ISR(&timerMux);
+	interruptCounter+=increment;
+	if (interruptCounter>=2*PI){
+		interruptCounter=0;
+	}
+	sinComp=(126.0* sin(interruptCounter))+128.0;
+	analogWrite( 26, (uint8_t)sinComp);
 }
 
 void setup() {
-	int count = 1250;
+	int count = (1.0/(frequencyTarget/1000000.0))/numSamples;
 	Serial.begin(115200);
 	Serial.println("Start ESPMutexDemo "+String(count)+" microsecond timer interrupts");
 	// get a pointer to a timer to use
@@ -32,15 +35,8 @@ void setup() {
 			count, // count, now now in us
 			true); // Reload after finishes, run again and again
 	timerAlarmEnable(timer); // Enable timer
-
 }
 
 void loop() {
-	// take the lock in the user code
-	//portENTER_CRITICAL(&timerMux);
-	// reset the latch, modify the global memory in user process
-	interruptCounter-=1.0;
-	Serial.println("Value = "+String(interruptCounter));
-	// release the lock
-	//portEXIT_CRITICAL(&timerMux);
+	Serial.println("Value = "+String(sinComp));
 }
