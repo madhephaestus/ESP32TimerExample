@@ -4,8 +4,8 @@
 
 double interruptCounter=0;
 double sinComp=0;
-double numSamples = 150;
-double frequencyTarget = 100;
+double numSamples = 20;
+double frequencyTarget = 500;
 double increment = (2*PI)/numSamples;
 // Pointer to the timer object
 hw_timer_t *timer = NULL;
