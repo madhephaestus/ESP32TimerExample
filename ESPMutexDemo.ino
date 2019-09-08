@@ -1,46 +1,39 @@
 #include "Arduino.h"
+#include "ESP32Servo.h"
+#include "ESP32PWM.h"
 
-double interruptCounter;
+const byte interruptPin = 25;
+volatile double interruptCounter = 0;
 
-// Pointer to the timer object
-hw_timer_t *timer = NULL;
-// Mutex object used for protecting variables
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-
-// Place the Interrupt handeler in IRAM section of memory
-void  IRAM_ATTR onTimer() {
-	// Lock the mutex
-	//portENTER_CRITICAL_ISR(&timerMux);
-	// modify the global variable in the System process
-	interruptCounter+=1.0;
-	// release the lock
-	//portEXIT_CRITICAL_ISR(&timerMux);
+portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+ESP32PWM pwm;
+void  IRAM_ATTR  handleInterrupt() {
+  portENTER_CRITICAL_ISR(&mux);
+  interruptCounter+=1.0;
+  portEXIT_CRITICAL_ISR(&mux);
 }
 
 void setup() {
-	int count = 1250;
-	Serial.begin(115200);
-	Serial.println("Start ESPMutexDemo "+String(count)+" microsecond timer interrupts");
-	// get a pointer to a timer to use
-	timer = timerBegin(3, // Timer 3
-			80, // Divider from the system clock to get to us
-			true); // Count up
-	timerAttachInterrupt(timer, // Timer to attach the interrupt
-			&onTimer, // Interrupt handler passed to timer
-			true); // Rising edge of timer
-	timerAlarmWrite(timer, // The timer object to use
-			count, // count, now now in us
-			true); // Reload after finishes, run again and again
-	timerAlarmEnable(timer); // Enable timer
+
+  Serial.begin(115200);
+  Serial.println("Monitoring interrupts: ");
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, CHANGE);
+  pwm.attachPin(33, 40000, 8);
+  pwm.writeScaled(0.5);
 
 }
 
 void loop() {
-	// take the lock in the user code
-	//portENTER_CRITICAL(&timerMux);
-	// reset the latch, modify the global memory in user process
-	interruptCounter-=1.0;
-	Serial.println("Value = "+String(interruptCounter));
-	// release the lock
-	//portEXIT_CRITICAL(&timerMux);
+
+  //if(interruptCounter>0){
+
+      //portENTER_CRITICAL(&mux);
+      interruptCounter--;
+      //portEXIT_CRITICAL(&mux);
+
+      //numberOfInterrupts++;
+      Serial.print("An interrupt has occurred. Total: ");
+      Serial.println(interruptCounter);
+  //}
 }
