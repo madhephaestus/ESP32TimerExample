@@ -3,7 +3,7 @@
 double interruptCounter;
 
 // Pointer to the timer object
-hw_timer_t * timer = NULL;
+hw_timer_t *timer = NULL;
 // Mutex object used for protecting variables
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
