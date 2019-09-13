@@ -2,20 +2,20 @@
 #include "ESP32Servo.h"
 #include "ESP32Encoder.h"
 /**
- * Drive motor 1 10Khz full duty PWM pin
+ * Drive motor 1 20Khz full duty PWM pin
  */
-#define MOTOR1_PWM 5
+#define MOTOR1_PWM			5
 /**
  * Pin for setting the direction of the H-Bridge
  */
-#define MOTOR1_DIR 4
+#define MOTOR1_DIR			4
 //Encoder pins
-#define MOTOR1_ENCA 19
-#define MOTOR1_ENCB 18
+#define MOTOR1_ENCA			19
+#define MOTOR1_ENCB			18
 /**
  * Enable for all H-bridges
  */
-#define H_BRIDGE_ENABLE             13
+#define H_BRIDGE_ENABLE		13
 // Hardware interface objects
 ESP32Encoder encoder;
 ESP32PWM motor;
@@ -31,7 +31,7 @@ void setup() {
 	Serial.println("Start ESPMutexDemo ");
 	// Attach the encoder pins to the encoder object
 	encoder.attachHalfQuad(MOTOR1_ENCA, MOTOR1_ENCB);
-	// start the PWM on the PWM pins
+	// start the PWM on the PWM pin, 20khz, 8 bit resolution
 	motor.attachPin(MOTOR1_PWM, 20000, 8);
 	// Motor direction pins
 	pinMode(MOTOR1_DIR, OUTPUT);
