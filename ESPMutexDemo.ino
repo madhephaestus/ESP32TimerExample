@@ -48,9 +48,9 @@ void studentCode(){
 	int adc = local_adc1_read(0);
 
 	if(digitalRead(0)!=0)
-		analogWrite(25, (uint8_t) ((adc+lastAdc)>>5));
+		analogWrite(25, (uint8_t) ((adc+lastAdc)>>4));
 	else
-		analogWrite(25, adc);
+		analogWrite(25, adc>>4);
 	lastAdc=adc;
 }
 
