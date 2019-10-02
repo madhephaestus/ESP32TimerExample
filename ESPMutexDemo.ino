@@ -16,7 +16,7 @@ double increment50Hz = increment / 10.0;
 hw_timer_t *timer = NULL;
 portMUX_TYPE DRAM_ATTR timerMux = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t complexHandlerTask;
-
+int lastAdc = 0;
 int IRAM_ATTR local_adc1_read(int channel) {
 	uint16_t adc_value;
 	SENS.sar_meas_start1.sar1_en_pad = (1 << channel); // only one channel is selected
@@ -45,13 +45,13 @@ void runDDS(){
 }
 
 void studentCode(){
-	int adc = local_adc1_read(0)>>4;
+	int adc = local_adc1_read(0);
 
 	if(digitalRead(0)!=0)
-		analogWrite(25, (uint8_t) adc);
+		analogWrite(25, (uint8_t) ((adc+lastAdc)>>5));
 	else
-		analogWrite(25, sinComp50Hz);
-
+		analogWrite(25, adc);
+	lastAdc=adc;
 }
 
 
