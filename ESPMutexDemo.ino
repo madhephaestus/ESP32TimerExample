@@ -3,6 +3,17 @@
 #include "analogWrite.h"
 #include <soc/sens_reg.h>
 #include <soc/sens_struct.h>
+#include <driver/adc.h>
+#include <esp_adc_cal.h>
+#include <stdint.h>
+#include "esp_types.h"
+#include "driver/adc.h"
+#include "soc/efuse_periph.h"
+#include "esp_err.h"
+#include "assert.h"
+#include "esp_adc_cal.h"
+
+
 double interruptCounter50Hz = 0;
 double interruptCounter500Hz = 0;
 double sinComp = 0;
@@ -17,6 +28,8 @@ hw_timer_t *timer = NULL;
 portMUX_TYPE DRAM_ATTR timerMux = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t complexHandlerTask;
 int lastAdc = 0;
+
+
 int IRAM_ATTR local_adc1_read(int channel) {
 	uint16_t adc_value;
 	SENS.sar_meas_start1.sar1_en_pad = (1 << channel); // only one channel is selected
@@ -29,6 +42,16 @@ int IRAM_ATTR local_adc1_read(int channel) {
 	adc_value = SENS.sar_meas_start1.meas1_data_sar;
 	return adc_value;
 }
+
+esp_err_t esp_adc_cal_get_voltage(adc_channel_t channel,
+                                  const esp_adc_cal_characteristics_t *chars,
+                                  uint32_t *voltage)
+{
+
+    *voltage = esp_adc_cal_raw_to_voltage((uint32_t)local_adc1_read(0), chars);
+    return ESP_OK;
+}
+
 
 void runDDS() {
 	interruptCounter500Hz += increment;
@@ -97,6 +120,19 @@ void setup() {
 			true); // Reload after finishes, run again and again
 	timerAlarmEnable(timer); // Enable timer
 	analogRead(36);
+#define V_REF 1100  // ADC reference voltage
+
+    // Configure ADC
+    adc1_config_width(ADC_WIDTH_12Bit);
+    adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
+
+    // Calculate ADC characteristics i.e. gain and offset factors
+    esp_adc_cal_characteristics_t characteristics;
+    esp_adc_cal_get_characteristics(V_REF, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, &characteristics);
+    uint32_t voltage=0;
+    // Read ADC and obtain result in mV
+    uint32_t err = esp_adc_cal_get_voltage(ADC_CHANNEL_0, &characteristics,&voltage);
+    printf("%d mV\n",voltage);
 }
 
 void loop() {
