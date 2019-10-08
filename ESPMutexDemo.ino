@@ -8,7 +8,7 @@ double interruptCounter500Hz = 0;
 double sinComp = 0;
 double sinComp50Hz = 0;
 double numSamples = 20;
-double frequencyTarget = 400;
+double frequencyTarget = 500;
 int count = (1.0 / (frequencyTarget / 1000000.0)) / numSamples;
 double increment = (2 * PI) / numSamples;
 double increment50Hz = increment / 10.0;
@@ -30,7 +30,7 @@ int IRAM_ATTR local_adc1_read(int channel) {
 	return adc_value;
 }
 
-void runDDS(){
+void runDDS() {
 	interruptCounter500Hz += increment;
 	if (interruptCounter500Hz >= 2 * PI) {
 		interruptCounter500Hz = 0;
@@ -44,16 +44,15 @@ void runDDS(){
 	analogWrite(26, (uint8_t) (sinComp50Hz + sinComp));
 }
 
-void studentCode(){
+void studentCode() {
 	int adc = local_adc1_read(0);
 
-	if(digitalRead(0)!=0)
-		analogWrite(25, (uint8_t) ((adc+lastAdc)>>4));
+	if (digitalRead(0) != 0)
+		analogWrite(25, (uint8_t) ((adc + lastAdc) >> 5));
 	else
-		analogWrite(25, adc>>4);
-	lastAdc=adc;
+		analogWrite(25, sinComp);
+	lastAdc = adc;
 }
-
 
 void complexHandler(void *param) {
 	while (true) {
@@ -101,5 +100,6 @@ void setup() {
 }
 
 void loop() {
-
+	//Serial.println("Looping");
+	delay(100);
 }
